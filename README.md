@@ -41,6 +41,15 @@ bash ~/ws_livox/src/livox_ros_driver2/scripts/build_humble.sh
 
 `ws_livox` 已包含 Livox SDK2 和驱动源码。如果 `~/ws_livox` 已存在，请使用已配置的工作区，或选择其他目录，避免覆盖现有文件。
 
+构建完成后，在 Bash 终端执行一次，将 SDK2 动态库路径写入 `~/.bashrc` 并在当前终端生效；如果已按 `ws_livox` 教程配置过，可以跳过：
+
+```bash
+echo 'export LD_LIBRARY_PATH="$HOME/ws_livox/.deps/livox_sdk2/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+使用其他工作区或 SDK2 安装路径时，将上述路径改为实际的 SDK2 `lib` 目录。
+
 ### 2. 构建 Point-LIO 工作区
 
 在另一个工作区中安装依赖并构建。若 `~/ws_mid360/src/Point-LIO_ROS2` 已存在，请使用已有源码或选择其他目录，避免覆盖现有文件：
@@ -81,7 +90,6 @@ CMAKE_PREFIX_PATH="/path/to/glog${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}" \
 ```bash
 source /opt/ros/humble/setup.bash
 source ~/ws_livox/install/setup.bash
-export LD_LIBRARY_PATH="$HOME/ws_livox/.deps/livox_sdk2/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 ros2 launch livox_ros_driver2 msg_MID360_launch.py
 ```
@@ -96,12 +104,11 @@ ros2 launch livox_ros_driver2 msg_MID360_launch.py
 source /opt/ros/humble/setup.bash
 source ~/ws_livox/install/setup.bash
 source ~/ws_mid360/install/setup.bash
-export LD_LIBRARY_PATH="$HOME/ws_livox/.deps/livox_sdk2/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 ros2 launch point_lio mapping_mid360.launch.py
 ```
 
-每个终端需分别加载 ROS 和对应工作区环境。`LD_LIBRARY_PATH` 用于加载配套驱动安装的 SDK2 动态库；使用自定义 SDK 安装目录时，请替换为实际的 `lib` 路径。
+每个终端需分别加载 ROS 和对应工作区环境。`LD_LIBRARY_PATH` 用于加载配套驱动安装的 SDK2 动态库；启动前请完成上述动态库路径配置。
 
 若已在终端中配置好上述环境，可直接依次运行两条 `ros2 launch` 命令。
 
