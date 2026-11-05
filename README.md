@@ -43,7 +43,7 @@ bash ~/ws_livox/src/livox_ros_driver2/scripts/build_humble.sh
 
 ### 2. 构建 Point-LIO 工作区
 
-在另一个工作区中安装依赖并构建：
+在另一个工作区中安装依赖并构建。若 `~/ws_mid360/src/Point-LIO_ROS2` 已存在，请使用已有源码或选择其他目录，避免覆盖现有文件：
 
 ```bash
 sudo apt update
@@ -63,7 +63,12 @@ bash ~/ws_mid360/src/Point-LIO_ROS2/scripts/build_humble.sh
 LIVOX_WORKSPACE=/path/to/ws_livox bash ~/ws_mid360/src/Point-LIO_ROS2/scripts/build_humble.sh
 ```
 
-启动脚本也支持通过 `LIVOX_WORKSPACE` 指定驱动工作区。自定义 glog 安装可通过 `CMAKE_PREFIX_PATH` 指定前缀。
+启动脚本也支持通过 `LIVOX_WORKSPACE` 指定驱动工作区。若 glog 安装在自定义目录，可在构建时通过 `CMAKE_PREFIX_PATH` 指定安装前缀：
+
+```bash
+CMAKE_PREFIX_PATH="/path/to/glog${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}" \
+  bash ~/ws_mid360/src/Point-LIO_ROS2/scripts/build_humble.sh
+```
 
 ## 运行
 
