@@ -16,6 +16,7 @@
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
 #include <chrono>
+#include <filesystem>
 
 // #include <cv_bridge/cv_bridge.h>
 // #include "matplotlibcpp.h"
@@ -62,6 +63,7 @@ void SigHandle(int sig)
 
 inline void dump_lio_state_to_log(FILE *fp)  
 {
+    if (!fp) return;
     V3D rot_ang;
     if (!use_imu_as_input)
     {
@@ -382,9 +384,15 @@ int main(int argc, char** argv)
     Eigen::Matrix<double, 24, 24> Q_input = process_noise_cov_input();
     Eigen::Matrix<double, 30, 30> Q_output = process_noise_cov_output();
     /*** debug record ***/
-    FILE *fp;
-    string pos_log_dir = root_dir + "/Log/pos_log.txt";
-    fp = fopen(pos_log_dir.c_str(),"w");
+    string log_dir = root_dir + "/Log";
+    std::error_code log_error;
+    std::filesystem::create_directories(log_dir, log_error);
+    if (log_error)
+        RCLCPP_WARN(logger, "Unable to create log directory %s: %s", log_dir.c_str(), log_error.message().c_str());
+    string pos_log_dir = log_dir + "/pos_log.txt";
+    FILE *fp = fopen(pos_log_dir.c_str(),"w");
+    if (!fp)
+        RCLCPP_WARN(logger, "Unable to open %s; pose logging is disabled", pos_log_dir.c_str());
     open_file();
 
     /*** ROS subscribe initialization ***/
@@ -1090,5 +1098,6 @@ int main(int argc, char** argv)
     }
     fout_out.close();
     fout_imu_pbp.close();
+    if (fp) fclose(fp);
     return 0;
 }
