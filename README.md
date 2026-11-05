@@ -9,7 +9,7 @@
 
 ## 本工程提供的内容
 
-- 对接 [配套 MID360 驱动工程](https://github.com/xhy-yyy/ws_livox_ros_driver2) 的自定义点云和 IMU。
+- 对接 [ws_livox MID360 驱动工作区](https://github.com/xhy-yyy/ws_livox) 的自定义点云和 IMU。
 - 每处理完一帧点云发布一次里程计和 TF；正常处理 20 Hz 点云时输出通常接近 20 Hz，需实测确认。
 - 默认关闭 RViz，节点输出写入日志，支持按需打开可视化。
 - glog 通过 CMake 查找，构建文件中没有个人工程的绝对路径。
@@ -28,7 +28,22 @@ ROS 包名为 `point_lio`，节点可执行文件为 `pointlio_mapping`。
 
 ## 准备环境和构建
 
-面向 Ubuntu 22.04 / ROS2 Humble。先完成配套 `livox_ros_driver2` 工程的构建，再执行：
+面向 Ubuntu 22.04 / ROS2 Humble。Point-LIO 构建时需要 `livox_ros_driver2` 消息类型，运行时需要驱动发布的点云和 IMU 数据，因此请先构建 [ws_livox](https://github.com/xhy-yyy/ws_livox)，再构建本工程。
+
+### 1. 构建 Livox 工作区
+
+按 [ws_livox 说明](https://github.com/xhy-yyy/ws_livox#安装与构建)安装驱动构建依赖，然后执行：
+
+```bash
+git clone https://github.com/xhy-yyy/ws_livox.git ~/ws_livox
+bash ~/ws_livox/src/livox_ros_driver2/scripts/build_humble.sh
+```
+
+`ws_livox` 已包含 Livox SDK2 和驱动源码。如果 `~/ws_livox` 已存在，请使用已配置的工作区，或选择其他目录，避免覆盖现有文件。
+
+### 2. 构建 Point-LIO 工作区
+
+在另一个工作区中安装依赖并构建：
 
 ```bash
 sudo apt update
@@ -38,17 +53,17 @@ sudo apt install build-essential cmake libeigen3-dev libpcl-dev libtbb-dev \
   ros-humble-pcl-conversions ros-humble-tf2-eigen \
   ros-humble-tf2-geometry-msgs ros-humble-visualization-msgs ros-humble-rviz2
 mkdir -p ~/ws_mid360/src
-git clone https://github.com/xhy-yyy/ws_Point-LIO_ROS2.git ~/ws_mid360/src/Point-LIO_ROS2
+git clone https://github.com/xhy-yyy/point-LIO_ROS2.git ~/ws_mid360/src/Point-LIO_ROS2
 bash ~/ws_mid360/src/Point-LIO_ROS2/scripts/build_humble.sh
 ```
 
 脚本默认寻找同级 `ws_livox`，路径不同时使用：
 
 ```bash
-LIVOX_WORKSPACE=/path/to/ws_livox bash scripts/build_humble.sh
+LIVOX_WORKSPACE=/path/to/ws_livox bash ~/ws_mid360/src/Point-LIO_ROS2/scripts/build_humble.sh
 ```
 
-自定义 glog 安装可通过 `CMAKE_PREFIX_PATH` 指定前缀。
+启动脚本也支持通过 `LIVOX_WORKSPACE` 指定驱动工作区。自定义 glog 安装可通过 `CMAKE_PREFIX_PATH` 指定前缀。
 
 ## 运行
 
@@ -66,7 +81,7 @@ export LD_LIBRARY_PATH="$HOME/ws_livox/.deps/livox_sdk2/lib${LD_LIBRARY_PATH:+:$
 ros2 launch livox_ros_driver2 msg_MID360_launch.py
 ```
 
-保持此终端运行，驱动应持续发布 `/livox/lidar` 点云和 `/livox/imu` 数据。网络配置见 [配套驱动工程说明](https://github.com/xhy-yyy/ws_livox_ros_driver2#网络配置)。
+保持此终端运行，驱动应持续发布 `/livox/lidar` 点云和 `/livox/imu` 数据。网络配置见 [ws_livox 说明](https://github.com/xhy-yyy/ws_livox#网络配置)。
 
 ### 2. 启动 Point-LIO（终端 2）
 
